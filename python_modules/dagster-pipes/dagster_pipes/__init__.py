@@ -7,7 +7,7 @@ import sys
 import time
 import warnings
 import zlib
-from abc import ABC, abstractmethod
+from abc import ABC, abstractmethod, abstractproperty
 from contextlib import ExitStack, contextmanager
 from io import StringIO
 from queue import Queue
@@ -352,11 +352,6 @@ def _normalize_param_metadata(
         else:
             new_metadata[key] = {"raw_value": value, "type": PIPES_METADATA_TYPE_INFER}
     return new_metadata
-
-
-def _param_from_env_var(env_var: str) -> Any:
-    raw_value = os.environ.get(env_var)
-    return decode_env_var(raw_value) if raw_value is not None else None
 
 
 def encode_env_var(value: Any) -> str:
@@ -726,18 +721,32 @@ DAGSTER_PIPES_CONTEXT_ENV_VAR = "DAGSTER_PIPES_CONTEXT"
 DAGSTER_PIPES_MESSAGES_ENV_VAR = "DAGSTER_PIPES_MESSAGES"
 
 
-class PipesEnvVarParamsLoader(PipesParamsLoader):
-    """Params loader that extracts params from environment variables."""
+class PipesSourceParamsLoader(PipesParamsLoader):
+    """Abstract params loader that extracts params from a Mapping source object."""
+
+    @abstractproperty
+    def source(self) -> Mapping[str, str]:
+        ...
 
     def is_dagster_pipes_process(self) -> bool:
         # use the presence of DAGSTER_PIPES_CONTEXT to discern if we are in a pipes process
-        return DAGSTER_PIPES_CONTEXT_ENV_VAR in os.environ
+        return DAGSTER_PIPES_CONTEXT_ENV_VAR in self.source
 
     def load_context_params(self) -> PipesParams:
-        return _param_from_env_var(DAGSTER_PIPES_CONTEXT_ENV_VAR)
+        raw_value = self.source[DAGSTER_PIPES_CONTEXT_ENV_VAR]
+        return decode_env_var(raw_value)
 
     def load_messages_params(self) -> PipesParams:
-        return _param_from_env_var(DAGSTER_PIPES_MESSAGES_ENV_VAR)
+        raw_value = self.source[DAGSTER_PIPES_MESSAGES_ENV_VAR]
+        return decode_env_var(raw_value)
+
+
+class PipesEnvVarParamsLoader(PipesSourceParamsLoader):
+    """Params loader that extracts params from environment variables."""
+
+    @property
+    def source(self):
+        return os.environ
 
 
 # ########################
