@@ -1,5 +1,7 @@
+import pytest
 from dagster._api.snapshot_schedule import sync_get_external_schedule_execution_data_ephemeral_grpc
 from dagster._core.definitions.schedule_definition import ScheduleExecutionData
+from dagster._core.errors import DagsterUserCodeUnreachableError
 from dagster._core.host_representation.external_data import ExternalScheduleExecutionErrorData
 from dagster._core.test_utils import instance_for_test
 from dagster._grpc.client import ephemeral_grpc_api_client
@@ -24,6 +26,17 @@ def test_external_schedule_execution_data_api_grpc():
             to_launch = execution_data.run_requests[0]
             assert to_launch.run_config == {"fizz": "buzz"}
             assert to_launch.tags == {"dagster/schedule_name": "foo_schedule"}
+
+
+def test_external_schedule_client_timeout(instance):
+    with get_bar_repo_handle(instance) as repository_handle:
+        with pytest.raises(
+            DagsterUserCodeUnreachableError,
+            match="User code server request timed out due to taking longer than 1 seconds to complete.",
+        ):
+            sync_get_external_schedule_execution_data_ephemeral_grpc(
+                instance, repository_handle, "schedule_times_out", None, timeout=1
+            )
 
 
 def test_external_schedule_execution_data_api_never_execute_grpc():
