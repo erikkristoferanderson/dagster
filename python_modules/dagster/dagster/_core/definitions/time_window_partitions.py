@@ -1829,6 +1829,11 @@ class PartitionKeysTimeWindowPartitionsSubset(BaseTimeWindowPartitionsSubset):
             included_partition_keys=self._included_partition_keys,
         )
 
+    def to_time_window_partitions_subset(self) -> "TimeWindowPartitionsSubset":
+        return TimeWindowPartitionsSubset(
+            self.partitions_def, self.num_partitions, self.included_time_windows
+        )
+
 
 class TimeWindowPartitionsSubsetSerializer(NamedTupleSerializer):
     # TimeWindowPartitionsSubsets have custom logic to delay calculating num_partitions until it
