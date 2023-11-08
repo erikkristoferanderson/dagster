@@ -29,7 +29,7 @@ from dagster._core.definitions import (
 from dagster._core.definitions.asset_check_spec import AssetCheckKey
 from dagster._core.definitions.asset_layer import AssetLayer
 from dagster._core.definitions.op_definition import OpComputeFunction
-from dagster._core.definitions.result import MaterializeResult
+from dagster._core.definitions.result import MaterializeResult, ObserveResult
 from dagster._core.errors import (
     DagsterExecutionStepExecutionError,
     DagsterInvariantViolationError,
@@ -58,6 +58,7 @@ OpOutputUnion: TypeAlias = Union[
     AssetCheckEvaluation,
     AssetCheckResult,
     MaterializeResult,
+    ObserveResult,
 ]
 
 
@@ -114,6 +115,7 @@ def _validate_event(event: Any, step_context: StepExecutionContext) -> OpOutputU
             AssetCheckResult,
             AssetCheckEvaluation,
             MaterializeResult,
+            ObserveResult,
         ),
     ):
         raise DagsterInvariantViolationError(

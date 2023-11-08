@@ -30,7 +30,7 @@ from dagster._core.definitions import (
 from dagster._core.definitions.decorators.op_decorator import DecoratedOpFunction
 from dagster._core.definitions.input import InputDefinition
 from dagster._core.definitions.op_definition import OpDefinition
-from dagster._core.definitions.result import MaterializeResult
+from dagster._core.definitions.result import MaterializeResult, ObserveResult
 from dagster._core.errors import DagsterInvariantViolationError
 from dagster._core.types.dagster_type import DagsterTypeKind, is_generic_output_annotation
 from dagster._utils import is_named_tuple_instance
@@ -122,12 +122,16 @@ def invoke_compute_fn(
         for resource_name, arg_name in resource_args.items():
             args_to_pass[arg_name] = context.resources._original_resource_dict[resource_name]  # noqa: SLF001
 
-    return fn(context, **args_to_pass) if context_arg_provided else fn(**args_to_pass)
+    print("INVOKING COMPUTE FN")
+    x = fn(context, **args_to_pass) if context_arg_provided else fn(**args_to_pass)
+    print("COMPUTE FN RETURNED", x)
+    return x
 
 
 def _coerce_op_compute_fn_to_iterator(
     fn, output_defs, context, context_arg_provided, kwargs, config_arg_class, resource_arg_mapping
 ):
+    print("COERCED")
     result = invoke_compute_fn(
         fn, context, kwargs, context_arg_provided, config_arg_class, resource_arg_mapping
     )
@@ -257,7 +261,7 @@ def validate_and_coerce_op_result_to_iterator(
             "value. Check out the docs on logging events here: "
             "https://docs.dagster.io/concepts/ops-jobs-graphs/op-events#op-events-and-exceptions"
         )
-    elif isinstance(result, AssetCheckResult):
+    elif isinstance(result, (AssetCheckResult, ObserveResult)):
         yield result
     elif result is not None and not output_defs:
         raise DagsterInvariantViolationError(
