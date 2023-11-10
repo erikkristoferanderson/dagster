@@ -49,6 +49,7 @@ from dagster._core.pipes.utils import (
 from dagster._core.storage.asset_check_execution_record import AssetCheckExecutionRecordStatus
 from dagster._utils.env import environ
 from dagster_aws.pipes import PipesS3ContextInjector, PipesS3MessageReader
+from dagster_pipes import DagsterPipesError
 from moto.server import ThreadedMotoServer
 
 _PYTHON_EXECUTABLE = shutil.which("python")
@@ -608,3 +609,26 @@ def test_pipes_exception():
         assert len(pipes_msgs) == 2
         assert "successfully opened" in pipes_msgs[0]
         assert "external process pipes closed with exception" in pipes_msgs[1]
+
+
+def test_pipes_expected_materialization():
+    def script_fn():
+        ...
+
+    @asset
+    def missing_mat(context: OpExecutionContext, pipes_client: PipesSubprocessClient):
+        with temp_script(script_fn) as script_path:
+            cmd = [_PYTHON_EXECUTABLE, script_path]
+            return pipes_client.run(
+                command=cmd,
+                context=context,
+            ).get_materialize_result(implicit_materialization=False)
+
+    with pytest.raises(
+        DagsterPipesError,
+        match="No materialization results received from external process",
+    ):
+        materialize(
+            [missing_mat],
+            resources={"pipes_client": PipesSubprocessClient()},
+        )
