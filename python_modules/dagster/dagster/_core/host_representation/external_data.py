@@ -1274,6 +1274,11 @@ class ExternalAssetNode(
 
         return AssetExecutionType.is_executable(varietal_text)
 
+    @property
+    def auto_materialize_evaluation_group_name(self) -> Optional[str]:
+        # TODO Differentiate from asset group name
+        return self.group_name
+
 
 ResourceJobUsageMap = Dict[str, List[ResourceJobUsageEntry]]
 
