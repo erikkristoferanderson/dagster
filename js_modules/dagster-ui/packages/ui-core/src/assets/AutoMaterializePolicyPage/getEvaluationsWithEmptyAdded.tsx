@@ -33,7 +33,6 @@ export const getEvaluationsWithEmptyAdded = ({
       evalsWithSkips.push({
         __typename: 'no_conditions_met' as const,
         evaluationId: current,
-        amount: current - evaluation.evaluationId,
         endTimestamp: prevEvaluation?.timestamp ? prevEvaluation?.timestamp - 60 : ('now' as const),
         startTimestamp: evaluation.timestamp + 60,
       });

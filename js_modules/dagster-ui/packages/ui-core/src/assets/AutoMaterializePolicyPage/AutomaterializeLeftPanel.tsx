@@ -75,11 +75,14 @@ export const AutomaterializeLeftList = (props: ListProps) => {
               <Box flex={{direction: 'column', gap: 4}} style={{width: '100%'}}>
                 <div>
                   {evaluation.startTimestamp ? (
-                    evaluation.amount === 1 ? (
-                      '1 evaluation'
-                    ) : (
-                      `${compactNumber(evaluation.amount)} evaluations`
-                    )
+                    <>
+                      <TimestampDisplay timestamp={evaluation.startTimestamp} /> to{' '}
+                      {evaluation.endTimestamp === 'now' ? (
+                        'now'
+                      ) : (
+                        <TimestampDisplay timestamp={evaluation.endTimestamp} />
+                      )}
+                    </>
                   ) : (
                     <>
                       {evaluation.endTimestamp === 'now' ? (
