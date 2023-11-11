@@ -69,10 +69,10 @@ class AssetGraphSubset(
             "Cannot provide both partitions_subsets_by_serialized_asset_key and partitions_subsets_by_asset_key",
         )
 
+        # TODO decide to_user_string or to_string
         if partitions_subsets_by_asset_key:
             partitions_subsets_by_serialized_asset_key = {
-                key.to_user_string(): value
-                for key, value in partitions_subsets_by_asset_key.items()
+                key.to_string(): value for key, value in partitions_subsets_by_asset_key.items()
             }
 
         return super(AssetGraphSubset, cls).__new__(
@@ -85,7 +85,7 @@ class AssetGraphSubset(
     @cached_property
     def partitions_subsets_by_asset_key(self) -> Mapping[AssetKey, PartitionsSubset]:
         return {
-            AssetKey.from_user_string(key): value
+            check.not_none(AssetKey.from_db_string(key)): value
             for key, value in self.partitions_subsets_by_serialized_asset_key.items()
         }
 
