@@ -41,6 +41,7 @@ TICKS_QUERY = """
 query AssetDameonTicksQuery($dayRange: Int, $dayOffset: Int, $statuses: [InstigationTickStatus!], $limit: Int, $cursor: String, $beforeTimestamp: Float, $afterTimestamp: Float) {
     autoMaterializeTicks(dayRange: $dayRange, dayOffset: $dayOffset, statuses: $statuses, limit: $limit, cursor: $cursor, beforeTimestamp: $beforeTimestamp, afterTimestamp: $afterTimestamp) {
         id
+        cursor
         timestamp
         endTimestamp
         status
@@ -69,6 +70,7 @@ def _create_tick(instance, status, timestamp, evaluation_id, run_requests=None, 
             status=status,
             timestamp=timestamp,
             end_timestamp=end_timestamp,
+            cursor=f"{FIXED_AUTO_MATERIALIZATION_ORIGIN_ID}:{timestamp}",
             selector_id=FIXED_AUTO_MATERIALIZATION_SELECTOR_ID,
             run_ids=[],
             auto_materialize_evaluation_id=evaluation_id,
@@ -187,7 +189,7 @@ class TestAutoMaterializeTicks(ExecutingGraphQLContextTestMatrix):
             == success_1.tick_data.auto_materialize_evaluation_id
         )
 
-        cursor = ticks[0]["id"]
+        cursor = ticks[0]["cursor"]
 
         result = execute_dagster_graphql(
             graphql_context,

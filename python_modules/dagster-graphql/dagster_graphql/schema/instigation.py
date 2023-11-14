@@ -256,7 +256,7 @@ class GrapheneInstigationTick(graphene.ObjectType):
     class Meta:
         name = "InstigationTick"
 
-    def __init__(self, _, tick):
+    def __init__(self, tick: InstigatorTick):
         self._tick = check.inst_param(tick, "tick", InstigatorTick)
 
         super().__init__(
@@ -274,8 +274,8 @@ class GrapheneInstigationTick(graphene.ObjectType):
             autoMaterializeAssetEvaluationId=tick.tick_data.auto_materialize_evaluation_id,
         )
 
-    def resolve_id(self, _):
-        return "%s:%s" % (self._tick.instigator_origin_id, self._tick.timestamp)
+    def resolve_id(self, _: ResolveInfo) -> str:
+        return str(self._tick.tick_id)
 
     def resolve_runs(self, graphene_info: ResolveInfo):
         from .pipelines.pipeline import GrapheneRun
@@ -659,7 +659,7 @@ class GrapheneInstigationState(graphene.ObjectType):
             after=timestamp - 1,
             limit=1,
         )
-        return GrapheneInstigationTick(graphene_info, matches[0]) if matches else None
+        return GrapheneInstigationTick(matches[0]) if matches else None
 
     def resolve_ticks(
         self,
