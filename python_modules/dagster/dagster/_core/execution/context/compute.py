@@ -1415,7 +1415,7 @@ class RunInfo(
         )
 
 
-class AssetExecutionContext:
+class AssetExecutionContext(OpExecutionContext):
     def __init__(self, op_execution_context: OpExecutionContext) -> None:
         self._op_execution_context = check.inst_param(
             op_execution_context, "op_execution_context", OpExecutionContext
@@ -1598,6 +1598,30 @@ class AssetExecutionContext:
                 #   "2023-08-21"
         """
         return self.op_execution_context.partition_key
+
+    @public
+    @property
+    def partition_keys(self) -> Sequence[str]:
+        """Returns a list of the partition keys for the current run.
+
+        If you want to write your asset to support running a backfill of several partitions in a single run,
+        you can use ``partition_keys`` to get all of the partitions being materialized
+        by the backfill.
+
+        Examples:
+            .. code-block:: python
+
+                partitions_def = DailyPartitionsDefinition("2023-08-20")
+
+                @asset(partitions_def=partitions_def)
+                def an_asset(context: AssetExecutionContext):
+                    context.log.info(context.partition_keys)
+
+
+                # running a backfill of the 2023-08-21 through 2023-08-25 partitions of this asset will log:
+                #   ["2023-08-21", "2023-08-22", "2023-08-23", "2023-08-24", "2023-08-25"]
+        """
+        return self.op_execution_context.partition_keys
 
     @deprecated(breaking_version="2.0", additional_warn_text="Use `partition_key_range` instead.")
     @public
@@ -2459,6 +2483,10 @@ class AssetExecutionContext:
     @property
     def asset_check_spec(self) -> AssetCheckSpec:
         return self.op_execution_context.asset_check_spec
+
+    @property
+    def is_subset(self):
+        return self.op_execution_context.is_subset
 
     # In this mode no conversion is done on returned values and missing but expected outputs are not
     # allowed.
