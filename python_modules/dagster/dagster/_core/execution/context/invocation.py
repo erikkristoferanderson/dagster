@@ -55,7 +55,7 @@ from dagster._core.types.dagster_type import DagsterType
 from dagster._utils.forked_pdb import ForkedPdb
 from dagster._utils.merger import merge_dicts
 
-from .compute import ExecutionInfo, OpExecutionContext
+from .compute import ExecutionProperties, OpExecutionContext
 from .system import StepExecutionContext, TypeCheckContext
 
 
@@ -125,7 +125,7 @@ class DirectInvocationOpExecutionContext(OpExecutionContext):
         self._hook_defs = None
         self._tags = {}
         self._seen_outputs = {}
-        self._execution_info = None
+        self._execution_props = None
 
         # maintain init time versions of these values so we can unbind the context
         self._init_op_config = op_config
@@ -240,7 +240,7 @@ class DirectInvocationOpExecutionContext(OpExecutionContext):
             raise DagsterInvalidInvocationError("Cannot provide config in both context and kwargs")
         self._op_config = resolve_bound_config(config_from_args or self.op_config, op_def)
 
-        self._execution_info = ExecutionInfo(
+        self._execution_props = ExecutionProperties(
             step_description=f'op "{self._alias}"', op_execution_context=self
         )
 
@@ -260,6 +260,7 @@ class DirectInvocationOpExecutionContext(OpExecutionContext):
         self._op_config = self._init_op_config
         self._user_events = []
         self._output_metadata = {}
+        self._execution_props = None
 
         self._bound = False
 
