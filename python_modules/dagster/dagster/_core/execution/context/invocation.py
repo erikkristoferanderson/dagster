@@ -241,7 +241,7 @@ class DirectInvocationOpExecutionContext(OpExecutionContext):
         self._op_config = resolve_bound_config(config_from_args or self.op_config, op_def)
 
         self._execution_info = ExecutionInfo(
-            step_description=f"op {self._alias}", op_execution_context=self
+            step_description=f'op "{self._alias}"', op_execution_context=self
         )
 
         self._requires_typed_event_stream = False
