@@ -29,6 +29,7 @@ from dagster._serdes.serdes import (
 
 from .tags import (
     BACKFILL_ID_TAG,
+    EVALUATION_TICK_TAG,
     REPOSITORY_LABEL_TAG,
     RESUME_RETRY_TAG,
     SCHEDULE_NAME_TAG,
@@ -434,6 +435,10 @@ class DagsterRun(
     @staticmethod
     def tags_for_backfill_id(backfill_id: str) -> Mapping[str, str]:
         return {BACKFILL_ID_TAG: backfill_id}
+
+    @staticmethod
+    def tags_for_evaluation_tick(tick_id: str) -> Mapping[str, str]:
+        return {EVALUATION_TICK_TAG: tick_id}
 
 
 class RunsFilterSerializer(NamedTupleSerializer["RunsFilter"]):
